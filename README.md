@@ -6,7 +6,20 @@
 
 First, setup specific `applicationId` for different flavors in `android` block in `android/app/build.gradle`:
 
-![img](./images/Screen_Shot_2023-03-03_at_16.23.07.png)
+```gradle
+flavorDimensions "app"
+productFlavors {
+    insix {
+        dimension "app"
+        applicationId "dev.techfusion.insix"
+    }
+    
+    crushit {
+        dimension "app"
+        applicationId "dev.techfusion.crushit"
+    }
+}
+```
 
 That will handle our app identifier, for now we need to still update **app name** for each version in `android/app/src/main/AndroidManifest.xml` add `app_name`:
 
@@ -57,7 +70,7 @@ Go to Target > Runner > Build Settings > Packaging > Product Bundle Identifier t
 
 ![Screen Shot 2023-03-03 at 16.30.29.png](./images/Screen_Shot_2023-03-03_at_16.30.29.png)
 
-And add new User defined settings for APP_DISPLAY_NAME and update the name each flavor.
+And **Add new User defined settings** for APP_DISPLAY_NAME and update the name each flavor.
 
 ![Screen Shot 2023-03-03 at 16.31.56.png](./images/Screen_Shot_2023-03-03_at_16.31.56.png)
 
@@ -129,17 +142,17 @@ You're done! No, really, Android doesn't need any additional setup.
 
 ### iOS
 
-- Find the newly created Storyboard files at the same location where the original is `/ios/Runner/Base.lproj` (LaunchScreen.storyboard is default)
+Find the newly created Storyboard files at the same location where the original is `/ios/Runner/Base.lproj` (LaunchScreen.storyboard is default)
 
-    ![Screen Shot 2023-03-04 at 16.52.02.png](./images/Screen_Shot_2023-03-04_at_16.52.02.png)
+![Screen Shot 2023-03-04 at 16.52.02.png](./images/Screen_Shot_2023-03-04_at_16.52.02.png)
 
-- Select all of them and drag and drop into Xcode, directly to the left hand side where the current LaunchScreen.storyboard is located already
+Select all of them and drag and drop into Xcode, directly to the left hand side where the current LaunchScreen.storyboard is located already
 
-    ![Screen Shot 2023-03-04 at 16.52.39.png](./images/Screen_Shot_2023-03-04_at_16.52.39.png)
+![Screen Shot 2023-03-04 at 16.52.39.png](./images/Screen_Shot_2023-03-04_at_16.52.39.png)
 
-- After you drop your files there Xcode will ask you to link them, make sure you select 'Copy if needed'
-- Go to Target > Runner > Build Settings and add new User defined settings for `LAUNCH_SCREEN_STORYBOARD` and update the launch storyboard for each flavor.
-- After you finish with that, open the Info.plist file and find key `UILaunchStoryboardName`. The default value is 'LaunchScreen', change that to `$(LAUNCH_SCREEN_STORYBOARD)`
+After you drop your files there Xcode will ask you to link them, make sure you select 'Copy if needed'
+Go to Target > Runner > Build Settings and add new User defined settings for `LAUNCH_SCREEN_STORYBOARD` and update the launch storyboard for each flavor.
+After you finish with that, open the Info.plist file and find key `UILaunchStoryboardName`. The default value is 'LaunchScreen', change that to `$(LAUNCH_SCREEN_STORYBOARD)`
 
 ## ***`Firebase`***
 
@@ -147,7 +160,7 @@ Every app will have their android and iOS version
 
 ### Android
 
-- Provided in [document](https://developers.google.com/android/guides/google-services-plugin?hl=vi#adding_the_json_file), you just put the corresponding `google-services.json` to insix folder and crushit folder.
+Provided in [document](https://developers.google.com/android/guides/google-services-plugin?hl=vi#adding_the_json_file), you just put the corresponding `google-services.json` to insix folder and crushit folder.
 
 ```code
 android/app/src/insix/google-services.json
@@ -157,10 +170,11 @@ android/app/src/crushit/google-services.json
 
 ### iOS
 
-- For iOS download GoogleServices-Info.plist, store it in this structure and then just drag and drop config file to the Xcode
-    ![Screen Shot 2023-03-04 at 16.52.39.png](./images/Screen_Shot_2023-03-07_at_12.08.43.png)
+For iOS download GoogleServices-Info.plist, store it in this structure and then just drag and drop **FirebaseConfig** folder to the Xcode
 
-- Then we need to add a script which will copy right firebase file on build
+![Screen Shot 2023-03-04 at 16.52.39.png](./images/Screen_Shot_2023-03-07_at_13.59.20.png)
+
+Then we need to add a script which will copy right firebase file on build
 
 ```bash
 environment="default"
@@ -180,7 +194,7 @@ echo $environment
 
 # Name and path of the resource we're copying
 GOOGLESERVICE_INFO_PLIST=GoogleService-Info.plist
-GOOGLESERVICE_INFO_FILE=${PROJECT_DIR}/config/${environment}/${GOOGLESERVICE_INFO_PLIST}
+GOOGLESERVICE_INFO_FILE=${PROJECT_DIR}/FirebaseConfig/${environment}/${GOOGLESERVICE_INFO_PLIST}
 
 # Make sure GoogleService-Info.plist exists
 echo "Looking for ${GOOGLESERVICE_INFO_PLIST} in ${GOOGLESERVICE_INFO_FILE}"
@@ -199,5 +213,30 @@ echo "Will copy ${GOOGLESERVICE_INFO_PLIST} to final destination: ${PLIST_DESTIN
 cp "${GOOGLESERVICE_INFO_FILE}" "${PLIST_DESTINATION}"
 ```
 
-- So just **Add a new run script** in your Build Phases, just underneath the **Link Binary With Libraries**.
+So just **Add a new run script** in your Build Phases, just underneath the **Link Binary With Libraries**.
     ![Screen Shot 2023-03-04 at 16.52.39.png](./images/Screen_Shot_2023-03-07_at_12.21.11.png)
+
+Run the next command to generate corresponding `FirebaseOptions` file for each flavor:
+
+```bash
+flutterfire configure \     
+--project=${flavor-firebase-project-id} \
+--out=lib/firebase_options_${flavor}.dart \
+--ios-bundle-id=dev.techfusion.${flavor} \
+--android-package-name=dev.techfusion.${flavor}
+```
+
+You can delete unnecessary files automatically generated from the above command like:
+
+- root_dir/android/app/google-services.json
+- root_dir/ios/firebase_app_id_file.json
+- root_dir/ios/Runner/GoogleService-Info.plist
+
+Then import in Dart code:
+
+```dart
+import 'firebase_options_crushit.dart';
+// or import 'firebase_options_insix.dart'; -->
+
+await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+```
