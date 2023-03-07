@@ -143,12 +143,61 @@ You're done! No, really, Android doesn't need any additional setup.
 
 ## ***`Firebase`***
 
-Run the next command:
+Every app will have their android and iOS version
+
+### Android
+
+- Provided in [document](https://developers.google.com/android/guides/google-services-plugin?hl=vi#adding_the_json_file), you just put the corresponding `google-services.json` to insix folder and crushit folder.
+
+```code
+android/app/src/insix/google-services.json
+
+android/app/src/crushit/google-services.json
+```
+
+### iOS
+
+- For iOS download GoogleServices-Info.plist, store it in this structure and then just drag and drop config file to the Xcode
+    ![Screen Shot 2023-03-04 at 16.52.39.png](./images/Screen_Shot_2023-03-07_at_12.08.43.png)
+
+- Then we need to add a script which will copy right firebase file on build
 
 ```bash
-flutterfire config \
-    --project=techfusion-insix \
-    --out=lib/firebase_options_insix.dart \
-    --ios-bundle-id=dev.techfusion.insix \
-    --android-app-id=dev.techfusion.insix
+environment="default"
+
+# Regex to extract the scheme name from the Build Configuration
+# We have named our Build Configurations as Debug-dev, Debug-prod etc.
+# Here, dev and prod are the scheme names. This kind of naming is required by Flutter for flavors to work.
+# We are using the $CONFIGURATION variable available in the XCode build environment to extract 
+# the environment (or flavor)
+# For eg.
+# If CONFIGURATION="Debug-prod", then environment will get set to "prod".
+if [[ $CONFIGURATION =~ -([^-]*)$ ]]; then
+environment=${BASH_REMATCH[1]}
+fi
+
+echo $environment
+
+# Name and path of the resource we're copying
+GOOGLESERVICE_INFO_PLIST=GoogleService-Info.plist
+GOOGLESERVICE_INFO_FILE=${PROJECT_DIR}/config/${environment}/${GOOGLESERVICE_INFO_PLIST}
+
+# Make sure GoogleService-Info.plist exists
+echo "Looking for ${GOOGLESERVICE_INFO_PLIST} in ${GOOGLESERVICE_INFO_FILE}"
+if [ ! -f $GOOGLESERVICE_INFO_FILE ]
+then
+echo "No GoogleService-Info.plist found. Please ensure it's in the proper directory."
+exit 1
+fi
+
+# Get a reference to the destination location for the GoogleService-Info.plist
+# This is the default location where Firebase init code expects to find GoogleServices-Info.plist file
+PLIST_DESTINATION=${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app
+echo "Will copy ${GOOGLESERVICE_INFO_PLIST} to final destination: ${PLIST_DESTINATION}"
+
+# Copy over the prod GoogleService-Info.plist for Release builds
+cp "${GOOGLESERVICE_INFO_FILE}" "${PLIST_DESTINATION}"
 ```
+
+- So just **Add a new run script** in your Build Phases, just underneath the **Link Binary With Libraries**.
+    ![Screen Shot 2023-03-04 at 16.52.39.png](./images/Screen_Shot_2023-03-07_at_12.21.11.png)
