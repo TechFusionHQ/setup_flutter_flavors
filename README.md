@@ -349,3 +349,9 @@ void main() {
   mainCommon();
 }
 ```
+
+Run app by scripts:
+
+```sh
+flutter run --flavor insix --target=lib/main_insix.dart
+```
