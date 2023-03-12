@@ -240,3 +240,112 @@ import 'firebase_options_crushit.dart';
 
 await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 ```
+
+## ***`Flavor Config`***
+
+Each flavor will have different config settings`, example:
+
+```dart
+class FlavorConfig {
+  final ApiConfig api;
+  final ThemeConfig theme;
+  final MetaConfig meta;
+  final FirebaseOptions firebaseOptions;
+
+  static FlavorConfig? _instance;
+  static FlavorConfig get instance => _instance!;
+
+  factory FlavorConfig.init({
+    required apiConfig,
+    required themeConfig,
+    required metaConfig,
+    required firebaseOptions,
+  }) {
+    _instance ??= FlavorConfig._internal(
+      api: apiConfig,
+      theme: themeConfig,
+      meta: metaConfig,
+      firebaseOptions: firebaseOptions,
+    );
+    return _instance!;
+  }
+
+  FlavorConfig._internal({
+    required this.api,
+    required this.theme,
+    required this.meta,
+    required this.firebaseOptions,
+  });
+}
+```
+
+And diffenrent main file to init flavor config, the following code is main_insix.dart file:
+
+```dart
+void main() {
+  FlavorConfig.init(
+    apiConfig: ApiConfig(
+      host: "https://www.insix.co.uk",
+      linkHost: "https://link.insix.co.uk",
+      version: "ghawp-api-v2",
+      connectTimeOut: 20,
+      receiveTimeOut: 20,
+      contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+    ),
+    themeConfig: ThemeConfig(
+      fontFamily: "Inter",
+      isDarkMode: true,
+      lightColorScheme: const ColorScheme.light(),
+      darkColorScheme: const ColorScheme.dark(
+        background: Color(0xFF0D0D0D),
+        onBackground: Color(0xFFFFFFFF),
+        surface: Color(0xFF191919),
+        onSurface: Color(0xFFFFFFFF),
+        primary: Color(0xFFF22E2E),
+        onPrimary: Color(0xFFFFFFFF),
+        secondary: Color(0xFFBDBDBD),
+        onSecondary: Color(0xFFFFFFFF),
+        shadow: Color(0xFFd3d1d1),
+      ),
+    ),
+    metaConfig: MetaConfig(
+      imageLogo: "assets/images/img_logo_insix.png",
+      splashBanners: const[
+        SplashBannerEntity(
+          thumb: "assets/images/img_splash_insix1.png",
+          title: "THE APP FOR FITNESS\nSUCCESS",
+          content: "Instant access to my personal IN SIX workouts AND my philosophy for success. Personalised meal plans, recipes and shopping list. Access to the team for support",
+        ),
+        SplashBannerEntity(
+          thumb: "assets/images/img_splash_insix2.png",
+          title: "PROGRAMS FOR ALL\nLEVELS OF FITNESS",
+          content:  "Designed with you in mind, my programs are easy to follow. Start IN SIX today and you’ll see results within 6 weeks!",
+        ),
+        SplashBannerEntity(
+          thumb: "assets/images/img_splash_insix3.png",
+          title: "ON-DEMAND\nTRAINING",
+          content: "IN SIX brings together my philosophy of mindset and working out, so you can achieve the results you are working for. Simply follow the blueprint and revel in your success!",
+        ),
+        SplashBannerEntity(
+          thumb: "assets/images/img_splash_insix4.png",
+          title: "PERSONALISED\nNUTRITION PLANS",
+          content: "Instant access to ALL my meal plans: regular, vegetarian. pescatarian and vegan. 100s of tasty, balanced recipes you’ll want to eat, and Personalised to your macros",
+        ),
+        SplashBannerEntity(
+          thumb: "assets/images/img_splash_insix5.png",
+          title: "INSIX BLUEPRINT FOR\nSUCCESS",
+          content: "I know from my personal journey that mindset and training properly will give you the results you want. This is the key to my IN SIX philosophy. Simply follow my IN SIX plans for real results",
+        ),
+      ],
+      appTourVideoUrl:'assets/be50b599-636d-4d07-b611-52de94df80fb/alt-1024x576.m3u8',
+      appTourVideoRatio: 1.77777777778,
+      programThumbRatio: 0.9,
+      visibleChallengeSection: false,
+      visibleCrew: false,
+    ),
+    firebaseOptions: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  mainCommon();
+}
+```
